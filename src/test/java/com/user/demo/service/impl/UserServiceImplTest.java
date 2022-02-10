@@ -6,6 +6,8 @@ import com.user.demo.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.mail.MessagingException;
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -16,13 +18,13 @@ class UserServiceImplTest extends BaseTest {
     private UserService userService;
 
     @Test
-    void addUser() {
+    void addUser() throws MessagingException, UnsupportedEncodingException {
         UserEntity userEntity = new UserEntity();
         userEntity.setUserName("Stefan");
         userEntity.setPassword("elderflower7");
         userEntity.setPhoneNumber("999");
         userEntity.setCreated(new Date());
-        assertTrue(userService.addUser(userEntity));
+        assertTrue(userService.addUser(userEntity, null));
     }
 
 }

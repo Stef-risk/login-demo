@@ -4,10 +4,17 @@ import com.user.demo.dao.UserDao;
 import com.user.demo.entity.UserEntity;
 import com.user.demo.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.List;
 
@@ -18,11 +25,26 @@ import java.util.List;
 @Service("userService")
 public class UserServiceImpl implements UserService {
 
+    /**
+     * 用户Dao
+     */
     @Autowired
     private UserDao userDao;
 
+    /**
+     * 发送邮件服务
+     */
+    @Autowired
+    private JavaMailSender mailSender;
+
+    /**
+     * 邮件发送者
+     */
+    @Value("${spring.mail.username}")
+    private String emailAddress;
+
     @Override
-    public Boolean addUser(UserEntity userEntity) {
+    public Boolean addUser(UserEntity userEntity, String siteUrl) throws MessagingException, UnsupportedEncodingException {
         if (userEntity == null) {
             log.error("添加用户失败,用户信息为空");
             return Boolean.FALSE;
@@ -31,8 +53,27 @@ public class UserServiceImpl implements UserService {
         Date date = new Date();
         userEntity.setCreated(date);
         userEntity.setUpdated(date);
+        //设置验证码和账户有效性
+        String verificationCode = RandomStringUtils.random(64, true, false);
+        userEntity.setVerificationCode(verificationCode);
+        userEntity.setEnabled(Boolean.FALSE);
         //进行插入
         userDao.insert(userEntity);
+        //发送验证码
+        sendVerificationEmail(userEntity, siteUrl);
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public Boolean verifyUser(String verificationCode) {
+        UserEntity userEntity = this.getUserByVerificationCode(verificationCode);
+        if (userEntity == null || userEntity.getEnabled()) {
+            return Boolean.FALSE;
+        }
+        // 更新激活状态且将验证码置为空
+        userEntity.setEnabled(Boolean.TRUE);
+        userEntity.setVerificationCode(null);
+        userDao.updateByPrimaryKey(userEntity);
         return Boolean.TRUE;
     }
 
@@ -50,5 +91,45 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserEntity> getAllUsers() {
         return userDao.selectAll();
+    }
+
+    @Override
+    public UserEntity getUserByVerificationCode(String verificationCode) {
+        UserEntity userEntity = new UserEntity();
+        userEntity.setVerificationCode(verificationCode);
+        return userDao.selectOne(userEntity);
+    }
+
+    /**
+     * 发送验证码
+     *
+     * @param userEntity
+     * @param siteUrl
+     */
+    private void sendVerificationEmail(UserEntity userEntity, String siteUrl) throws MessagingException, UnsupportedEncodingException {
+        String toAddress = userEntity.getPhoneNumber();
+        String senderName = "A Site Test For Login and Email";
+        String subject = "Please verify your registration";
+        String content = "Dear [[name]],<br>"
+                + "Please click the link below to verify your registration:<br>"
+                + "<h3><a href=\"[[URL]]\" target=\"_self\">VERIFY</a></h3>"
+                + "Thank you,<br>"
+                + "Your company name.";
+
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+
+        helper.setFrom(emailAddress, senderName);
+        helper.setTo(toAddress);
+        helper.setSubject(subject);
+
+        content = content.replace("[[name]]", userEntity.getUserName());
+        String verifyURL = siteUrl + "/verify?code=" + userEntity.getVerificationCode();
+
+        content = content.replace("[[URL]]", verifyURL);
+
+        helper.setText(content, true);
+
+        mailSender.send(message);
     }
 }

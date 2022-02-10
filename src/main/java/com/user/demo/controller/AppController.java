@@ -3,14 +3,16 @@ package com.user.demo.controller;
 import com.user.demo.entity.UserEntity;
 import com.user.demo.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import javax.jws.WebParam;
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 /**
@@ -58,7 +60,7 @@ public class AppController {
      * @return
      */
     @RequestMapping("/process_register")
-    public String processRegister(UserEntity userEntity) {
+    public String processRegister(UserEntity userEntity) throws MessagingException, UnsupportedEncodingException {
         //1.判空
         if (userEntity == null || userEntity.getPhoneNumber() == null || userEntity.getPassword() == null) {
             return null;
@@ -68,7 +70,7 @@ public class AppController {
         String encodedPassword = passwordEncoder.encode(userEntity.getPassword());
         userEntity.setPassword(encodedPassword);
         //3.保存用户信息
-        userService.addUser(userEntity);
+        userService.addUser(userEntity, null);
         return "register_success";
     }
 
@@ -85,5 +87,25 @@ public class AppController {
         String userName = request.getUserPrincipal().getName();
         log.info("{}", userName);
         return "users";
+    }
+
+    @RequestMapping("/verify")
+    public String verifyUser(@Param("code") String code) {
+        if (userService.verifyUser(code)) {
+            return "verify_success";
+        } else {
+            return "verify_fail";
+        }
+    }
+
+    /**
+     * 从请求获取站点Url
+     *
+     * @param request
+     * @return
+     */
+    private String getSiteUrl(HttpServletRequest request) {
+        String siteUrl = request.getRequestURL().toString();
+        return siteUrl.replace(request.getServletPath(), "");
     }
 }
