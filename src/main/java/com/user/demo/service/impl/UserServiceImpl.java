@@ -1,11 +1,15 @@
 package com.user.demo.service.impl;
 
+import ch.qos.logback.core.spi.LogbackLock;
+import com.alibaba.fastjson.JSON;
 import com.user.demo.dao.UserDao;
 import com.user.demo.entity.UserEntity;
 import com.user.demo.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -44,10 +48,15 @@ public class UserServiceImpl implements UserService {
     private String emailAddress;
 
     @Override
-    public Boolean addUser(UserEntity userEntity, String siteUrl) throws MessagingException, UnsupportedEncodingException {
+    public Boolean addUser(UserEntity userEntity, String siteUrl) throws Exception {
+        log.info("开始新增用户 User:{}", JSON.toJSONString(userEntity));
         if (userEntity == null) {
             log.error("添加用户失败,用户信息为空");
-            return Boolean.FALSE;
+            throw new Exception("user info empty");
+        }
+        if (isAccountAlreadyExist(userEntity)) {
+            log.error("该用户已经存在 User:{}", JSON.toJSONString(userEntity));
+            throw new Exception("user already exist");
         }
         //添加更新时间
         Date date = new Date();
@@ -66,10 +75,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Boolean verifyUser(String verificationCode) {
+        log.info("开始验证新注册用户账号 verificationCode:{}", verificationCode);
         UserEntity userEntity = this.getUserByVerificationCode(verificationCode);
         if (userEntity == null || userEntity.getEnabled()) {
             return Boolean.FALSE;
         }
+        log.info("根据验证码获取到用户 User:{}", JSON.toJSONString(userEntity));
         // 更新激活状态且将验证码置为空
         userEntity.setEnabled(Boolean.TRUE);
         userEntity.setVerificationCode(null);
@@ -98,6 +109,18 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = new UserEntity();
         userEntity.setVerificationCode(verificationCode);
         return userDao.selectOne(userEntity);
+    }
+
+    /**
+     * 判断该账号是否已经注册过
+     *
+     * @param userEntity
+     * @return
+     */
+    private Boolean isAccountAlreadyExist(UserEntity userEntity) {
+        UserEntity example = new UserEntity();
+        userEntity.setPhoneNumber(userEntity.getPhoneNumber());
+        return userDao.selectOne(example) != null;
     }
 
     /**

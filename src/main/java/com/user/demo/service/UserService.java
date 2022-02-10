@@ -20,7 +20,7 @@ public interface UserService {
      * @param siteUrl
      * @return
      */
-    Boolean addUser(UserEntity userEntity, String siteUrl) throws MessagingException, UnsupportedEncodingException;
+    Boolean addUser(UserEntity userEntity, String siteUrl) throws Exception;
 
     /**
      * 验证用户

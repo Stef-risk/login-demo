@@ -18,7 +18,7 @@ class UserServiceImplTest extends BaseTest {
     private UserService userService;
 
     @Test
-    void addUser() throws MessagingException, UnsupportedEncodingException {
+    void addUser() throws Exception {
         UserEntity userEntity = new UserEntity();
         userEntity.setUserName("Stefan");
         userEntity.setPassword("elderflower7");

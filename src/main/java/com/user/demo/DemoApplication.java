@@ -14,7 +14,7 @@ public class DemoApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-
+        log.error("Error Test");
     }
 
     public static void main(String[] args) {

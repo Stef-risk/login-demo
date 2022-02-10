@@ -1,5 +1,6 @@
 package com.user.demo.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.user.demo.entity.UserEntity;
 import com.user.demo.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -10,9 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 /**
@@ -60,9 +59,11 @@ public class AppController {
      * @return
      */
     @RequestMapping("/process_register")
-    public String processRegister(UserEntity userEntity) throws MessagingException, UnsupportedEncodingException {
+    public String processRegister(UserEntity userEntity, HttpServletRequest request) throws Exception {
+        log.info("开始进行用户注册 User:{}", JSON.toJSONString(userEntity));
         //1.判空
         if (userEntity == null || userEntity.getPhoneNumber() == null || userEntity.getPassword() == null) {
+            log.error("注册信息不全，拒绝注册 User:{}", JSON.toJSONString(userEntity));
             return null;
         }
         //2.对密码进行加密
@@ -70,7 +71,7 @@ public class AppController {
         String encodedPassword = passwordEncoder.encode(userEntity.getPassword());
         userEntity.setPassword(encodedPassword);
         //3.保存用户信息
-        userService.addUser(userEntity, null);
+        userService.addUser(userEntity, getSiteUrl(request));
         return "register_success";
     }
 
@@ -106,6 +107,7 @@ public class AppController {
      */
     private String getSiteUrl(HttpServletRequest request) {
         String siteUrl = request.getRequestURL().toString();
+        log.info("siteUrl:{}", siteUrl);
         return siteUrl.replace(request.getServletPath(), "");
     }
 }
