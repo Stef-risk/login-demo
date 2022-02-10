@@ -44,6 +44,20 @@ public class UserEntity {
     private Date updated;
 
     /**
+     * 注册验证码
+
+     */
+    @Column(name = "`verification_code`")
+    private String verificationCode;
+
+    /**
+     * 用户账户是否有效
+
+     */
+    @Column(name = "`enabled`")
+    private Boolean enabled;
+
+    /**
      * 获取自增ID
      *
      * @return id - 自增ID
@@ -149,5 +163,49 @@ public class UserEntity {
      */
     public void setUpdated(Date updated) {
         this.updated = updated;
+    }
+
+    /**
+     * 获取注册验证码
+
+     *
+     * @return verification_code - 注册验证码
+
+     */
+    public String getVerificationCode() {
+        return verificationCode;
+    }
+
+    /**
+     * 设置注册验证码
+
+     *
+     * @param verificationCode 注册验证码
+
+     */
+    public void setVerificationCode(String verificationCode) {
+        this.verificationCode = verificationCode == null ? null : verificationCode.trim();
+    }
+
+    /**
+     * 获取用户账户是否有效
+
+     *
+     * @return enabled - 用户账户是否有效
+
+     */
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    /**
+     * 设置用户账户是否有效
+
+     *
+     * @param enabled 用户账户是否有效
+
+     */
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 }

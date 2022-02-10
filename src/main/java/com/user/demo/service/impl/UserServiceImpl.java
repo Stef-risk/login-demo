@@ -1,6 +1,5 @@
 package com.user.demo.service.impl;
 
-import com.user.demo.dao.UserDao;
 import com.user.demo.entity.UserEntity;
 import com.user.demo.service.UserService;
 import lombok.extern.slf4j.Slf4j;
