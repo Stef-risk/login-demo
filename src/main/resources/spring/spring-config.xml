@@ -11,9 +11,7 @@
 
     <context:annotation-config/>
     <!-- 默认的注解映射的支持（不能动，用于加载dispatcher） -->
-    <mvc:default-servlet-handler/>
     <context:component-scan base-package="com.user.demo"/>
-    <mvc:annotation-driven/>
 
     <import resource="classpath*:spring/spring-config-dao.xml"/>
 </beans>

@@ -16,6 +16,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.UnsupportedEncodingException;
@@ -38,7 +39,7 @@ public class UserServiceImpl implements UserService {
     /**
      * 发送邮件服务
      */
-    @Autowired
+    @Resource
     private JavaMailSender mailSender;
 
     /**
