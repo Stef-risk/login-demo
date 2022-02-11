@@ -142,18 +142,16 @@ public class UserServiceImpl implements UserService {
 
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message);
-
+        // 设置发送者、接收者以及主题
         helper.setFrom(emailAddress, senderName);
         helper.setTo(toAddress);
         helper.setSubject(subject);
-
+        // 设置内容
         content = content.replace("[[name]]", userEntity.getUserName());
         String verifyURL = siteUrl + "/verify?code=" + userEntity.getVerificationCode();
-
         content = content.replace("[[URL]]", verifyURL);
-
         helper.setText(content, true);
-
+        // 发送
         mailSender.send(message);
     }
 }

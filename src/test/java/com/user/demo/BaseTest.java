@@ -7,7 +7,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 @ExtendWith(MockitoExtension.class)
-@SpringBootTest(classes = DemoApplication.class)
+@SpringBootTest
 public class BaseTest {
 
 }
