@@ -12,9 +12,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
@@ -48,6 +53,19 @@ public class UserServiceImpl implements UserService {
     @Value("${spring.mail.username}")
     private String emailAddress;
 
+    /**
+     * TransactionManager
+     */
+    @Autowired
+    private DataSourceTransactionManager dataSourceTransactionManager;
+
+    @Autowired
+    private TransactionDefinition transactionDefinition;
+
+    @Autowired
+    private TransactionTemplate transactionTemplate;
+
+    @Transactional
     @Override
     public Boolean addUser(UserEntity userEntity, String siteUrl) throws Exception {
         log.info("开始新增用户 User:{}", JSON.toJSONString(userEntity));
@@ -153,5 +171,11 @@ public class UserServiceImpl implements UserService {
         helper.setText(content, true);
         // 发送
         mailSender.send(message);
+    }
+
+    private void transactionTest() {
+        TransactionStatus transactionStatus= dataSourceTransactionManager.getTransaction(transactionDefinition);
+        //do something
+        dataSourceTransactionManager.commit(transactionStatus);
     }
 }
